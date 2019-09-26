@@ -50,8 +50,6 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Wrapper for the Jaeger tracer to allow it to be loaded as a service in Payara
@@ -66,45 +64,42 @@ public class JaegerTracerWrapper implements io.opentracing.Tracer {
      * Public constructor that can be called to initialise instance by serviceloader.
      */
     public JaegerTracerWrapper() {
-        Logger.getLogger("JAEGER_WRAPPER").log(Level.SEVERE, "Jaeger Tracer Wrapper created");
         setUpTracer();   
     }
 
     private synchronized void setUpTracer() {
         if (wrappedTracer == null) {
             Configuration.SamplerConfiguration samplerConfig = Configuration.SamplerConfiguration.fromEnv().withType(ConstSampler.TYPE).withParam(1);
-            Configuration.SenderConfiguration senderConfig = Configuration.SenderConfiguration.fromEnv().withAgentHost("localhost").withAgentPort(6831);
             Configuration.ReporterConfiguration reporterConfig = Configuration.ReporterConfiguration.fromEnv().withLogSpans(true);
             Configuration configuration = Configuration.fromEnv("jaeger-test").withSampler(samplerConfig).withReporter(reporterConfig);
             wrappedTracer = configuration.getTracer();
-            Logger.getLogger("JAEGER_WRAPPER").log(Level.SEVERE, "Sending using " + configuration.getReporter().getSenderConfiguration().getSender().getClass().getCanonicalName());
             GlobalTracer.register(wrappedTracer);
         }
     }
     
     @Override
     public ScopeManager scopeManager() {
-        return GlobalTracer.get().scopeManager();
+        return wrappedTracer.scopeManager();
     }
 
     @Override
     public Span activeSpan() {
-        return GlobalTracer.get().activeSpan();
+        return wrappedTracer.activeSpan();
     }
 
     @Override
     public SpanBuilder buildSpan(String string) {
-        return GlobalTracer.get().buildSpan(string);
+        return wrappedTracer.buildSpan(string);
     }
 
     @Override
     public <C> void inject(SpanContext sc, Format<C> format, C c) {
-        GlobalTracer.get().inject(sc, format, c);
+        wrappedTracer.inject(sc, format, c);
     }
 
     @Override
     public <C> SpanContext extract(Format<C> format, C c) {
-        return GlobalTracer.get().extract(format, c);
+        return wrappedTracer.extract(format, c);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
 /**
- * Wrapper for the Jaeger tracer to allow it to be loaded as a service in Payara
+ * Wrapper for the Jaeger tracer to allow it to be loaded as a service in Payara.
  *
  * @author jonathan coustick
  */
@@ -71,7 +71,8 @@ public class JaegerTracerWrapper implements io.opentracing.Tracer {
         if (wrappedTracer == null) {
             Configuration.SamplerConfiguration samplerConfig = Configuration.SamplerConfiguration.fromEnv().withType(ConstSampler.TYPE).withParam(1);
             Configuration.ReporterConfiguration reporterConfig = Configuration.ReporterConfiguration.fromEnv().withLogSpans(true);
-            Configuration configuration = Configuration.fromEnv("jaeger-test").withSampler(samplerConfig).withReporter(reporterConfig);
+            String serviceName = System.getProperty("JAEGER_SERVICE_NAME", "jaeger-test");
+            Configuration configuration = Configuration.fromEnv(serviceName).withSampler(samplerConfig).withReporter(reporterConfig);
             wrappedTracer = configuration.getTracer();
             GlobalTracer.register(wrappedTracer);
         }

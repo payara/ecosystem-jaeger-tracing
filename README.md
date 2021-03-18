@@ -2,6 +2,8 @@
 
 This is a wrapper for Jaeger Tracing to be used with Payara Platform 5.194+, as an alternative implementation of Opentracing.
 
+**ATTENTION**: Support for this repository is handled in the [Ecosystem Support repository](https://github.com/payara/ecosystem-support)
+
 ## Building
 
 `mvn clean install`

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -44,10 +44,7 @@ package fish.payara.jaeger.tracer.lib;
 
 import io.jaegertracing.Configuration;
 import io.jaegertracing.internal.samplers.ConstSampler;
-import io.opentracing.ScopeManager;
-import io.opentracing.Span;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
+import io.opentracing.*;
 import io.opentracing.propagation.Format;
 import io.opentracing.util.GlobalTracer;
 
@@ -71,10 +68,13 @@ public class JaegerTracerWrapper implements io.opentracing.Tracer {
         if (wrappedTracer == null) {
             Configuration.SamplerConfiguration samplerConfig = Configuration.SamplerConfiguration.fromEnv().withType(ConstSampler.TYPE).withParam(1);
             Configuration.ReporterConfiguration reporterConfig = Configuration.ReporterConfiguration.fromEnv().withLogSpans(true);
-            String serviceName = System.getProperty("JAEGER_SERVICE_NAME", "jaeger-test");
+            String serviceName = System.getenv("JAEGER_SERVICE_NAME");
+            if (serviceName == null || serviceName.isEmpty()) {
+                serviceName = "jaeger-test";
+            }
             Configuration configuration = Configuration.fromEnv(serviceName).withSampler(samplerConfig).withReporter(reporterConfig);
             wrappedTracer = configuration.getTracer();
-            GlobalTracer.register(wrappedTracer);
+            GlobalTracer.registerIfAbsent(wrappedTracer);
         }
     }
     
@@ -103,4 +103,13 @@ public class JaegerTracerWrapper implements io.opentracing.Tracer {
         return wrappedTracer.extract(format, c);
     }
 
+    @Override
+    public Scope activateSpan(Span span) {
+        return wrappedTracer.activateSpan(span);
+    }
+
+    @Override
+    public void close() {
+        wrappedTracer.close();
+    }
 }

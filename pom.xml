@@ -51,6 +51,8 @@
     <description>Ecosystem Payara Platform extension that activates Jaeger tracing instead of in-built tracing
     </description>
 
+    <url>https://github.com/payara/ecosystem-jaeger-tracing</url>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
